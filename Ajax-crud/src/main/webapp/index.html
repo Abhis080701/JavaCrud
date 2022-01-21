@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Ajax-Crud</title>
+<script
+	src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+</head>
+<!-- .@(#&$abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ -->
+<style>
+input[type=text], input[type=email] {
+	padding: 10px;
+	margin: 10px 0;
+	box-shadow: 0 0 10px 10px rgba(0, 0, 0, 0.06);
+}
+
+.edit-btn {
+	background: green;
+	color: #fff;
+	border: 0;
+	padding: 4px 10px;
+	border-radius: 3px;
+	cursor: pointer;
+}
+
+#modal {
+	background: rgba(0, 0, 0, 0.7);
+	position: fixed;
+	left: 0;
+	top: 0;
+	width: 100%;
+	height: 100%;
+	z-index: 100;
+	display: none;
+}
+
+#modal-form {
+	background: #fff;
+	width: 30%;
+	position: relative;
+	top: 20%;
+	left: calc(50% -15%);
+	padding: 15px;
+	border-radius: 4px;
+}
+
+#close-btn {
+	background: red;
+	color: white;
+	width: 30px;
+	height: 30px;
+	line-height: 30px;
+	text-align: center;
+	border-radius: 50%;
+	position: absolute;
+	top: -15px;
+	right: -15px;
+	cursor: pointer;
+}
+
+#success-message {
+	background: #DEF1D8;
+	color: green;
+	padding: 10px;
+	margin: 10px;
+	display: none;
+	position: absolute;
+	right: 15px;
+	top: 15px;
+}
+
+#error-message {
+	background: #EFDCDD; color : red;
+	padding: 10px;
+	margin: 10px;
+	display: none;
+	position: absolute;
+	right: 15px;
+	top: 15px;
+	color: red;
+	
+}
+</style>
+<body>
+
+	<center>
+		<div id="success-message"></div>
+		<div id="error-message"></div>
+		<table border="1">
+			<thead>
+				<tr>
+					<td>first name</td>
+					<td>last name</td>
+					<td>email</td>
+					<td>Action</td>
+				</tr>
+			</thead>
+			<tbody id="table-data">
+
+			</tbody>
+		</table>
+		
+		<div id="modal">
+			<div id="modal-form">
+				<h2>Edit Data</h2>
+				<table cellpadding="10px" width="100%">
+
+
+				</table>
+				<div id="close-btn">X</div>
+			</div>
+		</div>
+		<form method="POST" id="addrecord">
+			<label>First Name:-</label><br> <input type="text"
+				placeholder="Enter the First Name" name="fname" id="fname"><br>
+			<label>Last Name:-</label><br> <input type="text"
+				placeholder="Enter the Last Name" name="lname" id="lname"><br>
+			<label>Email:-</label><br> <input type="email"
+				placeholder="Enter the Email" name="email" id="email"><br>
+			<input type="submit" value="SUBMIT" id="save_data">
+		</form>
+	</center>
+	<script>
+$(document).ready(function(e){ 
+
+function LoadTable()
+{
+$.ajax({
+
+url:"view.jsp",
+type:"post",
+success:function(data){
+$("#table-data").html(data);
+}
+});
+}
+LoadTable();
+
+
+//Inserting Record
+$("#save_data").on("click",function(e){
+ e.preventDefault();
+//alert("succeess");
+var fname= $("#fname").val();
+var lname= $("#lname").val();
+var email = $("#email").val();
+
+$.ajax({
+ url:"add.jsp",
+ type:"post",
+ data: { Fname:fname,Lname:lname,Email:email},
+success : function(data){
+if(data)
+{
+
+$("#addrecord").trigger("reset");
+ LoadTable();
+ $("#success-message").html("Record inserted SuccessFully!").slideDown();
+ $("#error-message").slideUp();
+}
+else
+{
+$("#error-message").html("Can't Save Record!").slideDown();
+ $("#success-message").slideUp();
+}
+}
+  });
+  
+});
+
+// Delete Record
+$(document).on("click",".delete-btn",function(){
+if(confirm("Are u sure?"))
+{
+var userid = $(this).data("id");
+var element = this;
+
+$.ajax({
+url:"delete.jsp",
+type:"post",
+data:{id:userid},
+success:function(data)
+{
+if(data)
+{
+
+$(element).closest("tr").fadeOut();
+$("#success-message").html("Record Has Been Deleted").slideDown();
+$("error-message").slideUp();
+}
+else
+{
+$("#error-message").html("Can't Delete Record!").slideDown();
+ $("#success-message").slideUp();
+}
+}
+
+
+})
+}
+
+
+});
+
+//edit form
+
+$(document).on("click",".edit-btn",function(){
+$("#modal").show();
+var studid =$(this).data("eid");
+$.ajax({
+url:"edit.jsp",
+type:"POST",
+data:{id:studid},
+success:function(data)
+{
+$("#modal-form table").html(data);
+}
+});
+});
+//Close Form
+
+$("#close-btn").on("click",function(){
+$("#modal").hide(); });
+//edit form Data
+$(document).on("click","#edit-submit",function(){
+var id  = $("#edit-id").val();
+var fname  = $("#edit-fname").val();
+var lname  = $("#edit-lname").val();
+var email  = $("#edit-email").val();
+$.ajax({
+url:"update.jsp",
+type:"POST",
+data:{sid:id,sname:fname,slname:lname,semail:email},
+success:function(data)
+{
+if(data)
+{
+$("#modal").hide();
+
+LoadTable();
+$("addrecord").trigger("reset");
+$("#success-message").html("Record Updated").slideDown();
+$("error-message").slideUp();
+}else
+{
+$("#error-message").html("Can't Update Record!").slideDown();
+ $("#success-message").slideUp();
+}
+}
+});
+});
+});
+</script>
+
+</body>
+</html>
